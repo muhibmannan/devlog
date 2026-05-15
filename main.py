@@ -2,35 +2,30 @@
 
 VERSION = "0.1.0"
 
+MENU_OPTIONS = ["Add Task", "List Tasks", "Quit"]
+SORT_BY = ["Priority", "Date Added", "Status", "Back"]
+
 def show_banner():
     print("====================")
     print(f"   DevLog v{VERSION}")
     print("====================")
 
 
-def show_menu():
-    print("\nWhat would you like to do?")
-    print("  1. Add Task")
-    print("  2. List Tasks")
-    print("  3. Quit")
+def display_menu():
+    print()
+    for i, option in enumerate(MENU_OPTIONS):
+        print(f"{i + 1}. {option}")
 
-def run():
-    while True:
-        show_menu()
-        choice = input("\nEnter choice: ").strip()
 
-        if choice == "":
-            print("\nInvalid choice. Try again.")
-        elif choice == "1":
-            print("\n[Add Task — coming soon]")
-        elif choice == "2":
-            print("\n[List Tasks — coming soon]")
-        elif choice == "3":
-            print("\nGoodbye!")
-            break
+def sort_menu_options():
+    print()
+    for i, option in enumerate(SORT_BY):
+        print(f"{i + 1}. {option}")
+
 
 def get_task_input():
-    title = input("Task title: ").strip()
+
+    title = input("\nTask title: ").strip()
 
     if not title:
         print("Nothing was typed.")
@@ -44,26 +39,38 @@ def get_task_input():
         else:
             print("Invalid input. Please enter 1, 2 or 3.")
                    
-    print(f"Task title: {title}, Priority level: {priority}")
+    print(f"\nTask title: {title}, Priority level: {priority}")
+
+
+def run():
+    while True:
+        display_menu()
+        choice = input("\nEnter choice: ").strip()
+
+        if choice == "":
+            print("\nInvalid choice. Try again.")
+        elif choice == "1":
+            get_task_input()
+        elif choice == "2":
+            while True:
+                sort_menu_options()
+                sort_choice = input("\nSorting by: ").strip()
+                
+                if sort_choice == "4":
+                    break
+                elif sort_choice in ["1", "2", "3"]:
+                    print(f"\n[Sorting by {SORT_BY[int(sort_choice) - 1]} - coming soon]")
+                    break 
+                else:
+                    print("\nInvalid choice. Try again.")
+        elif choice == "3":
+            print("\nGoodbye!")
+            break
 
 
 def main():
     show_banner()
     run()
-
-    choice = input("\nEnter your choice: ").strip()
-    if not choice:
-        print("No input received. Please make a selection.")
-    elif choice == "1":
-        get_task_input()
-    elif choice == "2":
-        print("List Tasks selected.")
-    elif choice == "3":
-        print("Quitting DevLog. Goodbye!")
-    else:
-        print("Invalid choice. Please enter 1, 2, or 3.")
-
-
 
 
 if __name__ == "__main__":
