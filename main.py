@@ -14,6 +14,20 @@ def show_menu():
     print("  2. List Tasks")
     print("  3. Quit")
 
+def run():
+    while True:
+        show_menu()
+        choice = input("\nEnter choice: ").strip()
+
+        if choice == "":
+            print("\nInvalid choice. Try again.")
+        elif choice == "1":
+            print("\n[Add Task — coming soon]")
+        elif choice == "2":
+            print("\n[List Tasks — coming soon]")
+        elif choice == "3":
+            print("\nGoodbye!")
+            break
 
 def get_task_input():
     title = input("Task title: ").strip()
@@ -29,17 +43,14 @@ def get_task_input():
             break
         else:
             print("Invalid input. Please enter 1, 2 or 3.")
-            
-        
+                   
     print(f"Task title: {title}, Priority level: {priority}")
 
 
 def main():
     show_banner()
-    print("DevLog is ready.")
+    run()
 
-    show_menu()
-    
     choice = input("\nEnter your choice: ").strip()
     if not choice:
         print("No input received. Please make a selection.")
