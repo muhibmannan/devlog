@@ -19,7 +19,7 @@ def show_menu():
         print(f"{i + 1}. {option}")
 
 def get_menu_choice():
-    raw= input("\nChoose an option: ").strip()
+    raw = input("\nChoose an option: ").strip()
     if not raw.isdigit():
         return None
     value = int(raw)
@@ -33,6 +33,19 @@ def parse_task_input(raw_text):
         return "", False
     return cleaned, True
 
+def parse_tags(raw_text):
+    """Turn a raw comma-separated string into a clean list of tags"""
+    pieces = raw_text.split(",")
+    clean = []
+    for piece in pieces:
+        piece = piece.strip()
+        piece = piece.lower()
+        if piece:
+            if piece not in clean:
+                clean.append(piece)
+    return clean
+
+
 def get_task_input():
     raw = input("\nTask title: ")
     title, valid = parse_task_input(raw)
@@ -43,12 +56,18 @@ def get_task_input():
 
     while True:
         priority_input = input("Priority (1=low, 2=medium, 3=high): ").strip()
-        if priority_input in ["1", "2", "3"]:
+        if priority_input in {"1", "2", "3"}:
             priority = int(priority_input)
             break
         else:
-            print("Invalid input. Please enter 1, 2 or 3.")            
+            print("Invalid input. Please enter 1, 2 or 3.")
+
+    tag_inputs = input("Please input tags: ")
+    tags = parse_tags(tag_inputs)
+    tags = f"Tags: ",".join(tags)"
+
     print(f"\nTask title: {title}, Priority level: {priority}")
+    print(tags)
 
 def sort_tasks():
     while True:
@@ -80,10 +99,6 @@ def handle_choice(choice):
             print("\nGoodbye!")
             return False
         return True
-    else:
-        print("\nInvalid choice. Try again.")
-        return True
-    
 
 def run():
     while True:
