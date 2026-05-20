@@ -1,4 +1,4 @@
-"""<DevLog — a personal developer productivity tool for the terminal.>"""
+"""DevLog — a personal developer productivity tool for the terminal."""
 
 VERSION = "0.1.0"
 
@@ -79,6 +79,7 @@ def display_task(task):
     else:
         tags_display = ", ".join(task['tags'])
     print(f"  Tags: {tags_display}")
+    print("-------------------------------")
 
 
 def sort_tasks():
