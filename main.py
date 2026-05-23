@@ -1,9 +1,15 @@
 """DevLog — a personal developer productivity tool for the terminal."""
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
-MENU_OPTIONS = ["Add Task", "List Tasks", "Sort Task by Priority", "Delete Task", "Quit"]
-SORT_BY = ["Priority", "Date Added", "Status", "Back"]
+MENU_OPTIONS = [
+    "Add Task",
+    "List Tasks",
+    "Sort Task by Priority",
+    "Delete Task",
+    "Mark Task Complete",
+    "Quit",
+]
 
 
 def show_banner():
@@ -24,12 +30,12 @@ def get_menu_choice():
 
     if not raw.isdigit():
         return None
-    
+
     value = int(raw)
 
-    if value not in {1, 2, 3, 4, 5}:
+    if value not in {1, 2, 3, 4, 5, 6}:
         return None
-    
+
     return value
 
 
@@ -41,10 +47,10 @@ def get_task_title():
 
         if cleaned.lower() == "cancel":
             return None
-        
+
         if cleaned:
             return cleaned
-        
+
         print("Title cannot be empty.")
 
 
@@ -72,53 +78,65 @@ def parse_tags(raw):
     return clean
 
 
+def next_task_id(tasks):
+    if not tasks:
+        return 1
+
+    highest = tasks[0]["id"]
+
+    for task in tasks:
+        if task["id"] > highest:
+            highest = task["id"]
+
+    return highest + 1
+
+
 def get_task_input():
     title = get_task_title()
 
     if title is None:
         return None
-    
+
     priority = get_priority()
     tags = parse_tags(input("Tags (comma-separated, blank for none): "))
 
     return {"title": title, "priority": priority, "tags": tags}
-        
+
 
 def display_task(task):
+    print(f"        ID: {task['id']}")
     print(f"        Task: {task['title']}")
     print(f"        Priority: {task['priority']}")
-
-    if not task['tags']:
-        tags_display = "(no tags)"
+    print(f"        Status: {task['status']}")
+    if not task["tags"]:
+        tags_display = "(no tags.)"
     else:
-        tags_display = ", ".join(task['tags'])
+        tags_display = ", ".join(task["tags"])
 
     print(f"        Tags: {tags_display}")
 
 
 def list_tasks(tasks):
-    print()
-
     if not tasks:
-        print("No tasks yet.")
+        print("\nNo tasks yet.")
         return
-    
+
     for i, task in enumerate(tasks):
         print(f"\nTask {i + 1}: ")
-        display_task(task)    
+        display_task(task)
 
 
 def task_priority(task):
-    return task['priority']
+    return task["priority"]
 
 
 def get_task_number(tasks):
-    while True:    
-        raw = input("Which task to delete? (number, or 'cancel'): ").strip()
+    while True:
+        raw = input("Which task? (number, or 'cancel'): ").strip()
 
         if raw.lower() == "cancel":
             return None
-        
+
         if not raw.isdigit():
             print("Please enter a number.")
             continue
@@ -133,15 +151,28 @@ def get_task_number(tasks):
 
 def delete_task(tasks):
     if not tasks:
-        print("No tasks to delete.")
+        print("\nNo tasks to delete.")
         return
-    
+
     number = get_task_number(tasks)
     if number is None:
         return
 
     removed = tasks.pop(number - 1)
     print(f"Removed: {removed['title']}")
+
+
+def complete_task(tasks):
+    number = get_task_number(tasks)
+
+    if number is None:
+        return
+
+    if tasks[number - 1]["status"] == "done":
+        print("Task was completed before.")
+    else:
+        tasks[number - 1]["status"] = "done"
+        print(f"Task {number} is now marked as {tasks[number - 1]['status']}")
 
 
 def confirm_action(prompt):
@@ -154,29 +185,36 @@ def handle_choice(choice, tasks):
     if choice == 1:
         task = get_task_input()
         if task is not None:
+            task["id"] = next_task_id(tasks)
+            task["status"] = "todo"
             tasks.append(task)
         return True
-    
+
     elif choice == 2:
         list_tasks(tasks)
         return True
-    
+
     elif choice == 3:
         if not tasks:
-            print("No task to sort.")
+            print("No tasks to sort.")
             return True
-        
+
         tasks.sort(key=task_priority, reverse=True)
         list_tasks(tasks)
         return True
-    
+
     elif choice == 4:
         delete_task(tasks)
         return True
 
     elif choice == 5:
-        if confirm_action("Are you sure you want to quit? (y/n): "):
+        complete_task(tasks)
+        return True
+
+    elif choice == 6:
+        if confirm_action("\nAre you sure you want to quit? (y/n): "):
             print("\nGoodbye!")
+            print()
             return False
         return True
 
