@@ -8,6 +8,7 @@ MENU_OPTIONS = [
     "Sort Task by Priority",
     "Delete Task",
     "Mark Task Complete",
+    "Stats",
     "Quit",
 ]
 
@@ -33,7 +34,7 @@ def get_menu_choice():
 
     value = int(raw)
 
-    if value not in {1, 2, 3, 4, 5, 6}:
+    if value not in {1, 2, 3, 4, 5, 6, 7}:
         return None
 
     return value
@@ -163,19 +164,45 @@ def delete_task(tasks):
 
 
 def complete_task(tasks):
-    number = get_task_number(tasks)
+    if not tasks:
+        print("\nNo tasks to mark complete.")
+        return
 
+    number = get_task_number(tasks)
     if number is None:
         return
 
-    if tasks[number - 1]["status"] == "done":
+    task = tasks[number - 1]
+    if task["status"] == "done":
         print("Task was completed before.")
     else:
-        tasks[number - 1]["status"] = "done"
-        print(f"Task {number} is now marked as {tasks[number - 1]['status']}")
+        task["status"] = "done"
+        print(f"Task {task['title']} is now marked as {task['status']}")
+
+
+def show_stats(tasks):
+    if not tasks:
+        print("\nNo tasks on the list.")
+        return
+
+    counts = {}
+    for task in tasks:
+        status = task["status"]
+        counts[status] = counts.get(status, 0) + 1
+
+    total = len(tasks)
+
+    print(f"\nTotal tasks: {total}")
+    for status, n in counts.items():
+        print(f"  {status}: {n}")
+
+    done_count = counts.get("done", 0)
+    rate = done_count / total * 100
+    print(f"Completion rate: {rate:.2f}")
 
 
 def confirm_action(prompt):
+
     response = input(prompt).strip().lower()
     return response in ["y", "yes"]
 
@@ -212,6 +239,10 @@ def handle_choice(choice, tasks):
         return True
 
     elif choice == 6:
+        show_stats(tasks)
+        return True
+
+    elif choice == 7:
         if confirm_action("\nAre you sure you want to quit? (y/n): "):
             print("\nGoodbye!")
             print()
