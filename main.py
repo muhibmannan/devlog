@@ -12,6 +12,8 @@ MENU_OPTIONS = [
     "Quit",
 ]
 
+PRIORITY_LABELS = ("low", "medium", "high")
+
 
 def show_banner():
     print("\n====================")
@@ -198,7 +200,7 @@ def show_stats(tasks):
 
     done_count = counts.get("done", 0)
     rate = done_count / total * 100
-    print(f"Completion rate: {rate:.2f}")
+    print(f"Completion rate: {rate:.1f}%")
 
 
 def confirm_action(prompt):
