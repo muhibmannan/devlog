@@ -70,15 +70,15 @@ def get_priority():
 
 def parse_tags(raw):
     pieces = raw.split(",")
-    clean = []
+    tags = set()
 
     for piece in pieces:
         piece = piece.strip()
         piece = piece.lower()
-        if piece and piece not in clean:
-            clean.append(piece)
+        if piece:
+            tags.add(piece)
 
-    return clean
+    return tags
 
 
 def next_task_id(tasks):
@@ -106,15 +106,23 @@ def get_task_input():
     return {"title": title, "priority": priority, "tags": tags}
 
 
+def priority_label(priority):
+    if 1 <= priority <= 3:
+        return PRIORITY_LABELS[priority - 1]
+    return "unknown"
+
+
 def display_task(task):
     print(f"        ID: {task['id']}")
     print(f"        Task: {task['title']}")
-    print(f"        Priority: {task['priority']}")
+
+    label = priority_label(task["priority"])
+    print(f"        Priority: {label} ({task['priority']})")
     print(f"        Status: {task['status']}")
     if not task["tags"]:
         tags_display = "(no tags.)"
     else:
-        tags_display = ", ".join(task["tags"])
+        tags_display = ", ".join(sorted(task["tags"]))
 
     print(f"        Tags: {tags_display}")
 
