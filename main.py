@@ -10,6 +10,7 @@ MENU_OPTIONS = [
     "Delete Task",
     "Mark Task Complete",
     "Stats",
+    "Find Task by ID",
     "Quit",
 ]
 
@@ -143,9 +144,9 @@ def list_tasks(tasks):
 def filter_by_status(tasks):
     chosen = input(f"Status to filter by ({' / '.join(STATUSES)}): ").strip().lower()
 
-    matching = [task for task in tasks if task["status"] == chosen]
+    filtered_tasks = [task for task in tasks if task["status"] == chosen]
 
-    return matching
+    return filtered_tasks
 
 
 def task_priority(task):
@@ -169,6 +170,33 @@ def get_task_number(tasks):
             continue
 
         return number
+
+
+def index_by_id(tasks):
+    return {task["id"]: task for task in tasks}
+
+
+def find_task_by_id(tasks):
+    if not tasks:
+        print("\nNo tasks yet.")
+        return
+
+    raw = input("Task id to find: ").strip()
+
+    if not raw.isdigit():
+        print("Please enter a number.")
+        return
+
+    task_id = int(raw)
+
+    index = index_by_id(tasks)
+
+    task = index.get(task_id)
+
+    if task is None:
+        print(f"No task with id {task_id}")
+    else:
+        display_task(task)
 
 
 def delete_task(tasks):
@@ -269,6 +297,10 @@ def handle_choice(choice, tasks):
         return True
 
     elif choice == 8:
+        find_task_by_id(tasks)
+        return True
+
+    elif choice == 9:
         if confirm_action("\nAre you sure you want to quit? (y/n): "):
             print("\nGoodbye!")
             print()
