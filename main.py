@@ -5,6 +5,7 @@ VERSION = "0.2.0"
 MENU_OPTIONS = [
     "Add Task",
     "List Tasks",
+    "Filter Tasks by Status",
     "Sort Task by Priority",
     "Delete Task",
     "Mark Task Complete",
@@ -13,6 +14,8 @@ MENU_OPTIONS = [
 ]
 
 PRIORITY_LABELS = ("low", "medium", "high")
+
+STATUSES = ("todo", "in-progress", "done")
 
 
 def show_banner():
@@ -36,7 +39,7 @@ def get_menu_choice():
 
     value = int(raw)
 
-    if value not in {1, 2, 3, 4, 5, 6, 7}:
+    if value not in range(1, len(MENU_OPTIONS) + 1):
         return None
 
     return value
@@ -137,6 +140,14 @@ def list_tasks(tasks):
         display_task(task)
 
 
+def filter_by_status(tasks):
+    chosen = input(f"Status to filter by ({' / '.join(STATUSES)}): ").strip().lower()
+
+    matching = [task for task in tasks if task["status"] == chosen]
+
+    return matching
+
+
 def task_priority(task):
     return task["priority"]
 
@@ -232,27 +243,32 @@ def handle_choice(choice, tasks):
         return True
 
     elif choice == 3:
+        filtered_tasks = filter_by_status(tasks)
+        list_tasks(filtered_tasks)
+        return True
+
+    elif choice == 4:
         if not tasks:
-            print("No tasks to sort.")
+            print("\nNo tasks to sort.")
             return True
 
         tasks.sort(key=task_priority, reverse=True)
         list_tasks(tasks)
         return True
 
-    elif choice == 4:
+    elif choice == 5:
         delete_task(tasks)
         return True
 
-    elif choice == 5:
+    elif choice == 6:
         complete_task(tasks)
         return True
 
-    elif choice == 6:
+    elif choice == 7:
         show_stats(tasks)
         return True
 
-    elif choice == 7:
+    elif choice == 8:
         if confirm_action("\nAre you sure you want to quit? (y/n): "):
             print("\nGoodbye!")
             print()
