@@ -12,7 +12,7 @@ Under active development. Follow the journey across 10 phases.
 ## Phases
 
 - [x] Phase 1 — Foundations
-- [ ] Phase 2 — Data Structures
+- [x] Phase 2 — Data Structures
 - [ ] Phase 3 — Functions & Modules
 - [ ] Phase 4 — Object-Oriented Python
 - [ ] Phase 5 — File I/O & Error Handling
