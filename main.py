@@ -1,18 +1,20 @@
 """DevLog — a personal developer productivity tool for the terminal."""
 
-VERSION = "0.2.0"
+VERSION = "0.1.0"
 
-MENU_OPTIONS = [
+MENU_OPTIONS = (
     "Add Task",
     "List Tasks",
-    "Filter Tasks by Status",
-    "Sort Task by Priority",
+    "Sort by Priority",
+    "Mark Complete",
     "Delete Task",
-    "Mark Task Complete",
+    "Filter by Status",
+    "Filter by Tag(s)",
     "Stats",
-    "Find Task by ID",
-    "Quit",
-]
+    "Quit"
+    )
+
+SORT_BY = ("Priority", "Date Added", "Status", "Back")
 
 PRIORITY_LABELS = ("low", "medium", "high")
 
@@ -20,51 +22,54 @@ STATUSES = ("todo", "in-progress", "done")
 
 
 def show_banner():
-    print("\n====================")
+    print()
+    print("====================")
     print(f"   DevLog v{VERSION}")
     print("====================")
 
 
 def show_menu():
     print()
-
     for i, option in enumerate(MENU_OPTIONS):
         print(f"{i + 1}. {option}")
 
 
 def get_menu_choice():
     raw = input("\nChoose an option: ").strip()
-
     if not raw.isdigit():
         return None
-
     value = int(raw)
-
     if value not in range(1, len(MENU_OPTIONS) + 1):
         return None
-
     return value
+
+
+def next_task_id(tasks):
+    if not tasks:
+        return 1
+    
+    highest = tasks[0]["id"]
+
+    for task in tasks:
+        if task["id"] > highest:
+            highest = task["id"]
+    return highest + 1
 
 
 def get_task_title():
     while True:
         raw = input("\nTask title (or 'cancel' to abort): ")
-
         cleaned = raw.strip()
-
         if cleaned.lower() == "cancel":
             return None
-
         if cleaned:
             return cleaned
-
         print("Title cannot be empty.")
 
 
 def get_priority():
     while True:
         priority_input = input("Priority (1=low, 2=medium, 3=high): ").strip()
-
         if priority_input in {"1", "2", "3"}:
             priority = int(priority_input)
             return priority
@@ -72,249 +77,227 @@ def get_priority():
             print("Invalid input. Please enter 1, 2 or 3.")
 
 
-def parse_tags(raw):
+def parse_tags():
+    raw = input("Tags (comma-separated, blank for none): ")
     pieces = raw.split(",")
-    tags = set()
-
-    for piece in pieces:
-        piece = piece.strip()
-        piece = piece.lower()
-        if piece:
-            tags.add(piece)
-
+    tags = {piece.strip().lower() for piece in pieces if piece}
     return tags
-
-
-def next_task_id(tasks):
-    if not tasks:
-        return 1
-
-    highest = tasks[0]["id"]
-
-    for task in tasks:
-        if task["id"] > highest:
-            highest = task["id"]
-
-    return highest + 1
 
 
 def get_task_input():
     title = get_task_title()
-
     if title is None:
         return None
-
     priority = get_priority()
-    tags = parse_tags(input("Tags (comma-separated, blank for none): "))
-
+    tags = parse_tags()
     return {"title": title, "priority": priority, "tags": tags}
-
-
-def priority_label(priority):
-    if 1 <= priority <= 3:
-        return PRIORITY_LABELS[priority - 1]
-    return "unknown"
-
+        
 
 def display_task(task):
     print(f"        ID: {task['id']}")
     print(f"        Task: {task['title']}")
-
-    label = priority_label(task["priority"])
-    print(f"        Priority: {label} ({task['priority']})")
+    print(f"        Priority: {PRIORITY_LABELS[task['priority'] - 1]} ({task['priority']})")
     print(f"        Status: {task['status']}")
-    if not task["tags"]:
-        tags_display = "(no tags.)"
+    if not task['tags']:
+        tags_display = "(no tags)"
     else:
-        tags_display = ", ".join(sorted(task["tags"]))
-
+        tags_display = ", ".join(sorted(task['tags']))
     print(f"        Tags: {tags_display}")
 
 
 def list_tasks(tasks):
     if not tasks:
-        print("\nNo tasks yet.")
+        print("\n(no tasks yet)")
         return
-
-    for i, task in enumerate(tasks):
-        print(f"\nTask {i + 1}: ")
+    
+    for position, task in enumerate(tasks, start=1):
+        print(f"\n Task {position}")
         display_task(task)
-
-
-def filter_by_status(tasks):
-    chosen = input(f"Status to filter by ({' / '.join(STATUSES)}): ").strip().lower()
-
-    filtered_tasks = [task for task in tasks if task["status"] == chosen]
-
-    return filtered_tasks
-
+    
 
 def task_priority(task):
     return task["priority"]
 
 
-def get_task_number(tasks):
-    while True:
-        raw = input("Which task? (number, or 'cancel'): ").strip()
-
-        if raw.lower() == "cancel":
-            return None
-
-        if not raw.isdigit():
-            print("Please enter a number.")
-            continue
-
-        number = int(raw)
-        if number < 1 or number > len(tasks):
-            print(f"Pick a number between 1 and {len(tasks)}.")
-            continue
-
-        return number
+def sort_tasks_by_priority(tasks):
+    if not tasks:
+        return []
+    
+    sorted_tasks = sorted(tasks, key=task_priority, reverse = True)
+    return sorted_tasks
 
 
 def index_by_id(tasks):
-    return {task["id"]: task for task in tasks}
+    return {task['id']: task for task in tasks}
 
 
 def find_task_by_id(tasks):
-    if not tasks:
-        print("\nNo tasks yet.")
-        return
-
-    raw = input("Task id to find: ").strip()
-
-    if not raw.isdigit():
-        print("Please enter a number.")
-        return
-
-    task_id = int(raw)
-
     index = index_by_id(tasks)
+    while True:
+        prompt = input("\nWhat's the task ID? (number, or 'cancel'): ").strip()
 
-    task = index.get(task_id)
+        if prompt.lower() == "cancel":
+            return None
+        
+        if not prompt.isdigit():
+            print("Please enter a number.")
+            continue
 
+        target_id = int(prompt)
+        task = index.get(target_id)
+
+        if task is None:
+            print(f"\nTask not found. Enter valid ID.")
+            continue
+        return task
+    
+
+def complete_task(tasks):
+    if not tasks:
+        print("\nNo tasks to mark complete.")
+        return
+    task = find_task_by_id(tasks)
     if task is None:
-        print(f"No task with id {task_id}")
+        return
+    if task["status"] == "done":
+        print("Task was completed before.")
     else:
-        display_task(task)
+        task["status"] = "done"
+        print(f"\nTask '{task["title"]}' is now marked as done.")
 
 
 def delete_task(tasks):
     if not tasks:
         print("\nNo tasks to delete.")
         return
+    
+    task = find_task_by_id(tasks)
 
-    number = get_task_number(tasks)
-    if number is None:
+    if task is None:
         return
 
-    removed = tasks.pop(number - 1)
-    print(f"Removed: {removed['title']}")
+    tasks.remove(task)
+    print(f"Removed: {task['title']}")
 
 
-def complete_task(tasks):
+def filter_by_status(tasks):
+    chosen = input(f"\nStatus to filter by ({' / '.join(STATUSES)}): ").strip().lower()
+    return [task for task in tasks if task['status'] == chosen]
+
+
+def filtered_by_tags(tasks):
     if not tasks:
-        print("\nNo tasks to mark complete.")
+        print("\nNo tasks to filter.")
         return
+    tags = parse_tags()
 
-    number = get_task_number(tasks)
-    if number is None:
-        return
+    matches = [task for task in tasks if task['tags'] & tags]
 
-    task = tasks[number - 1]
-    if task["status"] == "done":
-        print("Task was completed before.")
-    else:
-        task["status"] = "done"
-        print(f"Task {task['title']} is now marked as {task['status']}")
+    if not matches:
+        print("No task found.")
+
+    return matches
+
+
+def calculate_stats(tasks):
+    status_counts = {}
+    for task in tasks:
+        status = task['status']
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    total = sum(status_counts.values())
+
+    done_count = status_counts.get("done", 0)
+    rate = done_count / len(tasks) * 100
+
+    return status_counts, total, rate
 
 
 def show_stats(tasks):
     if not tasks:
-        print("\nNo tasks on the list.")
+        print("(no tasks yet)")
         return
 
-    counts = {}
-    for task in tasks:
-        status = task["status"]
-        counts[status] = counts.get(status, 0) + 1
+    counts_status, total, rate = calculate_stats(tasks)
 
-    total = len(tasks)
+    labels = [f"{status}:" for status in counts_status] + ["Total:"]
+    width = max(len(label) for label in labels)
 
-    print(f"\nTotal tasks: {total}")
-    for status, n in counts.items():
-        print(f"  {status}: {n}")
+    print("\nDevLog Stats")
+    print(" " + "-" * (width + 4))
 
-    done_count = counts.get("done", 0)
-    rate = done_count / total * 100
+    for status, count in counts_status.items():
+        label = f"{status}:"
+        print(f" {label:<{width}}  {count}")
+    print(f" {'Total:':<{width}}  {total}")
     print(f"Completion rate: {rate:.1f}%")
+    pending = [task['title'] for task in tasks if task['status'] != "done"]
+    if pending:
+        tasks_list = ", ".join(pending)
+        print(f"Pending: {tasks_list}")
 
 
-def confirm_action(prompt):
-
-    response = input(prompt).strip().lower()
+def confirm_action():
+    response = input("Are you sure you want to quit? (y/n): ").strip().lower()
     return response in ["y", "yes"]
 
 
 def handle_choice(choice, tasks):
-
     if choice == 1:
         task = get_task_input()
         if task is not None:
             task["id"] = next_task_id(tasks)
             task["status"] = "todo"
             tasks.append(task)
+            print(f"\n Task '{task["title"]}' added.")
         return True
-
+    
     elif choice == 2:
         list_tasks(tasks)
         return True
-
+    
     elif choice == 3:
-        filtered_tasks = filter_by_status(tasks)
-        list_tasks(filtered_tasks)
+        sorted_tasks = sort_tasks_by_priority(tasks)
+        list_tasks(sorted_tasks)
         return True
 
     elif choice == 4:
-        if not tasks:
-            print("\nNo tasks to sort.")
-            return True
-
-        tasks.sort(key=task_priority, reverse=True)
-        list_tasks(tasks)
+        complete_task(tasks)
         return True
-
+    
     elif choice == 5:
         delete_task(tasks)
         return True
-
+    
     elif choice == 6:
-        complete_task(tasks)
+        similar_status = filter_by_status(tasks)
+        list_tasks(similar_status)
         return True
-
+    
     elif choice == 7:
+        similar_tags = filtered_by_tags(tasks)
+        list_tasks(similar_tags)
+        return True
+    
+    elif choice == 8:
         show_stats(tasks)
         return True
 
-    elif choice == 8:
-        find_task_by_id(tasks)
-        return True
-
     elif choice == 9:
-        if confirm_action("\nAre you sure you want to quit? (y/n): "):
+        if confirm_action():
             print("\nGoodbye!")
-            print()
             return False
         return True
 
 
 def run():
     tasks = []
+
     while True:
         show_menu()
         choice = get_menu_choice()
         if choice is None:
-            print("\nInvalid choice, try again.")
+            print("Invalid choice, try again.")
             continue
         if not handle_choice(choice, tasks):
             break
