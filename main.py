@@ -1,6 +1,6 @@
 """DevLog — a personal developer productivity tool for the terminal."""
 
-VERSION = "0.1.0"
+VERSION = "0.3.0"
 
 MENU_OPTIONS = (
     "Add Task",
@@ -91,6 +91,9 @@ def get_task_input():
     priority = get_priority()
     tags = parse_tags()
     return {"title": title, "priority": priority, "tags": tags}
+
+def make_task(title, *tags, priority=2, status="todo"):
+    return {"title": title, "tags": set(tags), "priority": priority, "status": status}
         
 
 def display_task(task):
@@ -244,10 +247,14 @@ def confirm_action():
 
 def handle_choice(choice, tasks):
     if choice == 1:
-        task = get_task_input()
-        if task is not None:
+        raw = get_task_input()
+        if raw is not None:
+            title = raw["title"]
+            priority = raw["priority"]
+            tags = raw["tags"]
+        
+            task = make_task(title, *tags, priority=priority, status="todo")
             task["id"] = next_task_id(tasks)
-            task["status"] = "todo"
             tasks.append(task)
             print(f"\n Task '{task["title"]}' added.")
         return True
