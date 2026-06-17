@@ -5,7 +5,7 @@ VERSION = "0.2.0"
 MENU_OPTIONS = (
     "Add Task",
     "List Tasks",
-    "Sort by Priority",
+    "Sort Tasks",
     "Mark Complete",
     "Delete Task",
     "Filter by Status",
@@ -31,7 +31,7 @@ def show_banner():
 def show_menu():
     print()
     for i, option in enumerate(MENU_OPTIONS):
-        print(f"{i + 1}. {option}")
+        print(f"   {i + 1}. {option}")
 
 
 def get_menu_choice():
@@ -115,7 +115,7 @@ def list_tasks(tasks):
         return
     
     for position, task in enumerate(tasks, start=1):
-        print(f"\n Task {position}")
+        print(f"\n  Task {position}")
         display_task(task)
     
 
@@ -123,12 +123,46 @@ def task_priority(task):
     return task["priority"]
 
 
-def sort_tasks_by_priority(tasks):
+def task_title_key(task):
+    return task['title'].lower()
+
+
+SORT_KEYS = {
+    "priority": task_priority,
+    "title": task_title_key,
+}
+
+SORT_MENU = (
+    ("Priority", "priority", True),
+    ("Title",    "title",    False),
+)
+
+def get_sort_choice():
+    raw = input("\nChoose an option: ").strip()
+    if not raw.isdigit():
+        return None
+    value = int(raw)
+    if value not in range(1, len(SORT_MENU) + 1):
+        return None
+    return value
+
+
+def choose_sort(tasks):
     if not tasks:
-        return []
+        return tasks
     
-    sorted_tasks = sorted(tasks, key=task_priority, reverse = True)
-    return sorted_tasks
+    print("\nSort by:")
+    for i, row in enumerate(SORT_MENU):
+        print(f"   {i + 1}. {row[0]}")
+
+    choice = get_sort_choice()
+    if choice is None:
+        print("Invalid choice.")
+        return tasks
+        
+    label_display, label, reverse = SORT_MENU[choice - 1]
+    key_fn = SORT_KEYS[label]
+    return sorted(tasks, key=key_fn, reverse=reverse)
 
 
 def index_by_id(tasks):
@@ -257,7 +291,7 @@ def handle_choice(choice, tasks):
             task = make_task(title, *tags, priority=priority, status="todo")
             task["id"] = next_task_id(tasks)
             tasks.append(task)
-            print(f"\n Task '{task["title"]}' added.")
+            print(f"\nTask '{task["title"]}' added.")
         return True
     
     elif choice == 2:
@@ -265,7 +299,7 @@ def handle_choice(choice, tasks):
         return True
     
     elif choice == 3:
-        sorted_tasks = sort_tasks_by_priority(tasks)
+        sorted_tasks = choose_sort(tasks)
         list_tasks(sorted_tasks)
         return True
 
