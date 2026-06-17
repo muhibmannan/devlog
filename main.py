@@ -1,6 +1,6 @@
 """DevLog — a personal developer productivity tool for the terminal."""
 
-VERSION = "0.3.0"
+VERSION = "0.2.0"
 
 MENU_OPTIONS = (
     "Add Task",
@@ -91,6 +91,7 @@ def get_task_input():
     priority = get_priority()
     tags = parse_tags()
     return {"title": title, "priority": priority, "tags": tags}
+
 
 def make_task(title, *tags, priority=2, status="todo"):
     return {"title": title, "tags": set(tags), "priority": priority, "status": status}
