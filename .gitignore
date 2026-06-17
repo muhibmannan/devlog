@@ -38,3 +38,10 @@ reports/
 
 # Scratch / practice files
 scratch/
+
+# Type checker cache (Phase 7, when mypy lands)
+.mypy_cache/
+
+# OS noise
+.DS_Store
+Thumbs.db
