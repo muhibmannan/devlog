@@ -119,22 +119,9 @@ def list_tasks(tasks):
         display_task(task)
     
 
-def task_priority(task):
-    return task["priority"]
-
-
-def task_title_key(task):
-    return task['title'].lower()
-
-
-SORT_KEYS = {
-    "priority": task_priority,
-    "title": task_title_key,
-}
-
 SORT_MENU = (
-    ("Priority", "priority", True),
-    ("Title",    "title",    False),
+    ("Priority", lambda task: task['priority'].lower(), True),
+    ("Title", lambda task: task['title'].lower(),    False),
 )
 
 def get_sort_choice():
@@ -161,8 +148,7 @@ def choose_sort(tasks):
         return tasks
         
     label_display, label, reverse = SORT_MENU[choice - 1]
-    key_fn = SORT_KEYS[label]
-    return sorted(tasks, key=key_fn, reverse=reverse)
+    return sorted(tasks, key=label, reverse=reverse)
 
 
 def index_by_id(tasks):
