@@ -1,5 +1,8 @@
 """DevLog — a personal developer productivity tool for the terminal."""
 
+from tasks import STATUSES, make_task, next_task_id, index_by_id, find_task_by_id, filter_by_status, parse_tags, filtered_by_tags, calculate_stats
+
+
 VERSION = "0.2.0"
 
 MENU_OPTIONS = (
@@ -18,8 +21,6 @@ MENU_OPTIONS = (
 SORT_BY = ("Priority", "Date Added", "Status", "Back")
 
 PRIORITY_LABELS = ("low", "medium", "high")
-
-STATUSES = ("todo", "in-progress", "done")
 
 DEBUG = False
 
@@ -53,18 +54,6 @@ def get_menu_choice():
     return value
 
 
-def next_task_id(tasks):
-    if not tasks:
-        return 1
-    
-    highest = tasks[0]["id"]
-
-    for task in tasks:
-        if task["id"] > highest:
-            highest = task["id"]
-    return highest + 1
-
-
 def get_task_title():
     while True:
         raw = input("\nTask title (or 'cancel' to abort): ")
@@ -86,13 +75,6 @@ def get_priority():
             print("Invalid input. Please enter 1, 2 or 3.")
 
 
-def parse_tags():
-    raw = input("Tags (comma-separated, blank for none): ")
-    pieces = raw.split(",")
-    tags = {piece.lower() for piece in pieces if piece.strip()}
-    return tags
-
-
 def get_task_input():
     title = get_task_title()
     if title is None:
@@ -100,10 +82,6 @@ def get_task_input():
     priority = get_priority()
     tags = parse_tags()
     return {"title": title, "priority": priority, "tags": tags}
-
-
-def make_task(title, *tags, priority=2, status="todo"):
-    return {"title": title, "tags": set(tags), "priority": priority, "status": status}
 
 
 def display_task(task):
@@ -163,31 +141,6 @@ def choose_sort(tasks):
     return sorted(tasks, key=key_fn, reverse=reverse)
 
 
-def index_by_id(tasks):
-    return {task['id']: task for task in tasks}
-
-
-def find_task_by_id(tasks):
-    index = index_by_id(tasks)
-    while True:
-        prompt = input("\nWhat's the task ID? (number, or 'cancel'): ").strip()
-
-        if prompt.lower() == "cancel":
-            return None
-        
-        if not prompt.isdigit():
-            print("Please enter a number.")
-            continue
-
-        target_id = int(prompt)
-        task = index.get(target_id)
-
-        if task is None:
-            print(f"\nTask not found. Enter valid ID.")
-            continue
-        return task
-    
-
 def complete_task(tasks):
     if not tasks:
         print("\nNo tasks to mark complete.")
@@ -214,39 +167,6 @@ def delete_task(tasks):
 
     tasks.remove(task)
     print(f"Removed: {task['title']}")
-
-
-def filter_by_status(tasks):
-    chosen = input(f"\nStatus to filter by ({' / '.join(STATUSES)}): ").strip().lower()
-    return [task for task in tasks if task['status'] == chosen]
-
-
-def filtered_by_tags(tasks):
-    if not tasks:
-        print("\nNo tasks to filter.")
-        return
-    tags = parse_tags()
-
-    matches = [task for task in tasks if task['tags'] & tags]
-
-    if not matches:
-        print("No task found.")
-
-    return matches
-
-
-def calculate_stats(tasks):
-    status_counts = {}
-    for task in tasks:
-        status = task['status']
-        status_counts[status] = status_counts.get(status, 0) + 1
-
-    total = sum(status_counts.values())
-
-    done_count = status_counts.get("done", 0)
-    rate = (done_count /len(tasks) * 100) if tasks else 0
-
-    return status_counts, total, rate
 
 
 def show_stats(tasks):
