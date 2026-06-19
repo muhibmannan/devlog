@@ -11,6 +11,7 @@ MENU_OPTIONS = (
     "Filter by Status",
     "Filter by Tag(s)",
     "Stats",
+    "DEBUG mode ON/OFF",
     "Quit"
     )
 
@@ -19,6 +20,14 @@ SORT_BY = ("Priority", "Date Added", "Status", "Back")
 PRIORITY_LABELS = ("low", "medium", "high")
 
 STATUSES = ("todo", "in-progress", "done")
+
+DEBUG = False
+
+def toggle_debug():
+    global DEBUG
+    DEBUG = not DEBUG
+    print()
+    print(f"   DEBUG is {'ON' if DEBUG else 'OFF'}.")
 
 
 def show_banner():
@@ -31,7 +40,7 @@ def show_banner():
 def show_menu():
     print()
     for i, option in enumerate(MENU_OPTIONS):
-        print(f"   {i + 1}. {option}")
+        print(f"   {(i + 1):>2}. {option}")
 
 
 def get_menu_choice():
@@ -80,7 +89,7 @@ def get_priority():
 def parse_tags():
     raw = input("Tags (comma-separated, blank for none): ")
     pieces = raw.split(",")
-    tags = {piece.strip().lower() for piece in pieces if piece}
+    tags = {piece.lower() for piece in pieces if piece.strip()}
     return tags
 
 
@@ -95,7 +104,7 @@ def get_task_input():
 
 def make_task(title, *tags, priority=2, status="todo"):
     return {"title": title, "tags": set(tags), "priority": priority, "status": status}
-        
+
 
 def display_task(task):
     print(f"        ID: {task['id']}")
@@ -107,6 +116,9 @@ def display_task(task):
     else:
         tags_display = ", ".join(sorted(task['tags']))
     print(f"        Tags: {tags_display}")
+    if DEBUG:
+        print(f"        [debug] raw tags: {task['tags']!r}")
+        print(f"        [debug] obj id: {id(task)}")
 
 
 def list_tasks(tasks):
@@ -120,7 +132,7 @@ def list_tasks(tasks):
     
 
 SORT_MENU = (
-    ("Priority", lambda task: task['priority'].lower(), True),
+    ("Priority", lambda task: task['priority'], True),
     ("Title", lambda task: task['title'].lower(),    False),
 )
 
@@ -147,8 +159,8 @@ def choose_sort(tasks):
         print("Invalid choice.")
         return tasks
         
-    label_display, label, reverse = SORT_MENU[choice - 1]
-    return sorted(tasks, key=label, reverse=reverse)
+    display_name, key_fn, reverse = SORT_MENU[choice - 1]
+    return sorted(tasks, key=key_fn, reverse=reverse)
 
 
 def index_by_id(tasks):
@@ -232,7 +244,7 @@ def calculate_stats(tasks):
     total = sum(status_counts.values())
 
     done_count = status_counts.get("done", 0)
-    rate = done_count / len(tasks) * 100
+    rate = (done_count /len(tasks) * 100) if tasks else 0
 
     return status_counts, total, rate
 
@@ -310,8 +322,12 @@ def handle_choice(choice, tasks):
     elif choice == 8:
         show_stats(tasks)
         return True
-
+    
     elif choice == 9:
+        toggle_debug()
+        return True
+
+    elif choice == 10:
         if confirm_action():
             print("\nGoodbye!")
             return False
