@@ -1,9 +1,7 @@
 """DevLog — a personal developer productivity tool for the terminal."""
 
-from tasks import STATUSES, make_task, next_task_id, index_by_id, find_task_by_id, filter_by_status, parse_tags, filtered_by_tags, calculate_stats
-
-
-VERSION = "0.2.0"
+from .tasks import STATUSES, make_task, next_task_id, index_by_id, find_task_by_id, filter_by_status, parse_tags, filtered_by_tags, calculate_stats
+from . import VERSION
 
 MENU_OPTIONS = (
     "Add Task",
@@ -148,11 +146,11 @@ def complete_task(tasks):
     task = find_task_by_id(tasks)
     if task is None:
         return
-    if task["status"] == "done":
+    if task['status'] == "done":
         print("Task was completed before.")
     else:
-        task["status"] = "done"
-        print(f"\nTask '{task["title"]}' is now marked as done.")
+        task['status'] = "done"
+        print(f"\nTask '{task['title']}' is now marked as done.")
 
 
 def delete_task(tasks):
@@ -202,14 +200,14 @@ def handle_choice(choice, tasks):
     if choice == 1:
         raw = get_task_input()
         if raw is not None:
-            title = raw["title"]
-            priority = raw["priority"]
-            tags = raw["tags"]
+            title = raw['title']
+            priority = raw['priority']
+            tags = raw['tags']
         
             task = make_task(title, *tags, priority=priority, status="todo")
-            task["id"] = next_task_id(tasks)
+            task['id'] = next_task_id(tasks)
             tasks.append(task)
-            print(f"\nTask '{task["title"]}' added.")
+            print(f"\nTask '{task['title']}' added.")
         return True
     
     elif choice == 2:
