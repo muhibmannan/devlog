@@ -1,125 +1,10 @@
+
 """DevLog — a personal developer productivity tool for the terminal."""
 
-from .tasks import STATUSES, make_task, next_task_id, index_by_id, find_task_by_id, filter_by_status, parse_tags, filtered_by_tags, calculate_stats
-from . import VERSION
-
-MENU_OPTIONS = (
-    "Add Task",
-    "List Tasks",
-    "Sort Tasks",
-    "Mark Complete",
-    "Delete Task",
-    "Filter by Status",
-    "Filter by Tag(s)",
-    "Stats",
-    "DEBUG mode ON/OFF",
-    "Quit"
-    )
-
-SORT_BY = ("Priority", "Date Added", "Status", "Back")
-
-PRIORITY_LABELS = ("low", "medium", "high")
-
-DEBUG = False
-
-def toggle_debug():
-    global DEBUG
-    DEBUG = not DEBUG
-    print()
-    print(f"   DEBUG is {'ON' if DEBUG else 'OFF'}.")
-
-
-def show_banner():
-    print()
-    print("====================")
-    print(f"   DevLog v{VERSION}")
-    print("====================")
-
-
-def show_menu():
-    print()
-    for i, option in enumerate(MENU_OPTIONS):
-        print(f"   {(i + 1):>2}. {option}")
-
-
-def get_menu_choice():
-    raw = input("\nChoose an option: ").strip()
-    if not raw.isdigit():
-        return None
-    value = int(raw)
-    if value not in range(1, len(MENU_OPTIONS) + 1):
-        return None
-    return value
-
-
-def get_task_title():
-    while True:
-        raw = input("\nTask title (or 'cancel' to abort): ")
-        cleaned = raw.strip()
-        if cleaned.lower() == "cancel":
-            return None
-        if cleaned:
-            return cleaned
-        print("Title cannot be empty.")
-
-
-def get_priority():
-    while True:
-        priority_input = input("Priority (1=low, 2=medium, 3=high): ").strip()
-        if priority_input in {"1", "2", "3"}:
-            priority = int(priority_input)
-            return priority
-        else:
-            print("Invalid input. Please enter 1, 2 or 3.")
-
-
-def get_task_input():
-    title = get_task_title()
-    if title is None:
-        return None
-    priority = get_priority()
-    tags = parse_tags()
-    return {"title": title, "priority": priority, "tags": tags}
-
-
-def display_task(task):
-    print(f"        ID: {task['id']}")
-    print(f"        Task: {task['title']}")
-    print(f"        Priority: {PRIORITY_LABELS[task['priority'] - 1]} ({task['priority']})")
-    print(f"        Status: {task['status']}")
-    if not task['tags']:
-        tags_display = "(no tags)"
-    else:
-        tags_display = ", ".join(sorted(task['tags']))
-    print(f"        Tags: {tags_display}")
-    if DEBUG:
-        print(f"        [debug] raw tags: {task['tags']!r}")
-        print(f"        [debug] obj id: {id(task)}")
-
-
-def list_tasks(tasks):
-    if not tasks:
-        print("\n(no tasks yet)")
-        return
-    
-    for position, task in enumerate(tasks, start=1):
-        print(f"\n  Task {position}")
-        display_task(task)
-    
-
-SORT_MENU = (
-    ("Priority", lambda task: task['priority'], True),
-    ("Title", lambda task: task['title'].lower(),    False),
-)
-
-def get_sort_choice():
-    raw = input("\nChoose an option: ").strip()
-    if not raw.isdigit():
-        return None
-    value = int(raw)
-    if value not in range(1, len(SORT_MENU) + 1):
-        return None
-    return value
+from .tasks import make_task, next_task_id, find_task_by_id, filter_by_status, tasks_matching_tags, calculate_stats, SORT_MENU
+from .input import get_menu_choice, get_sort_choice, get_task_input, parse_tags, confirm_action
+from .display import show_banner, show_menu, list_tasks
+from .utils import toggle_debug
 
 
 def choose_sort(tasks):
@@ -130,7 +15,7 @@ def choose_sort(tasks):
     for i, row in enumerate(SORT_MENU):
         print(f"   {i + 1}. {row[0]}")
 
-    choice = get_sort_choice()
+    choice = get_sort_choice(len(SORT_MENU))
     if choice is None:
         print("Invalid choice.")
         return tasks
@@ -164,7 +49,7 @@ def delete_task(tasks):
         return
 
     tasks.remove(task)
-    print(f"Removed: {task['title']}")
+    print(f"\nREMOVED: {task['title']}")
 
 
 def show_stats(tasks):
@@ -189,11 +74,6 @@ def show_stats(tasks):
     if pending:
         tasks_list = ", ".join(pending)
         print(f"Pending: {tasks_list}")
-
-
-def confirm_action():
-    response = input("Are you sure you want to quit? (y/n): ").strip().lower()
-    return response in ["y", "yes"]
 
 
 def handle_choice(choice, tasks):
@@ -233,8 +113,9 @@ def handle_choice(choice, tasks):
         return True
     
     elif choice == 7:
-        similar_tags = filtered_by_tags(tasks)
-        list_tasks(similar_tags)
+        tags = parse_tags()
+        matches = tasks_matching_tags(tasks, tags)
+        list_tasks(matches)
         return True
     
     elif choice == 8:

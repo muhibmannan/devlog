@@ -1,4 +1,10 @@
+
 STATUSES = ("todo", "in-progress", "done")
+
+SORT_MENU = (
+    ("Priority", lambda task: task['priority'], True),
+    ("Title", lambda task: task['title'].lower(),    False),
+)
 
 def make_task(title, *tags, priority=2, status="todo"):
     return {"title": title, "tags": set(tags), "priority": priority, "status": status}
@@ -46,25 +52,8 @@ def filter_by_status(tasks):
     return [task for task in tasks if task['status'] == chosen]
 
 
-def parse_tags():
-    raw = input("Tags (comma-separated, blank for none): ")
-    pieces = raw.split(",")
-    tags = {piece.strip().lower() for piece in pieces if piece.strip()}
-    return tags
-
-
-def filtered_by_tags(tasks):
-    if not tasks:
-        print("\nNo tasks to filter.")
-        return
-    tags = parse_tags()
-
-    matches = [task for task in tasks if task['tags'] & tags]
-
-    if not matches:
-        print("No task found.")
-
-    return matches
+def tasks_matching_tags(tasks, tags):
+    return [task for task in tasks if task['tags'] & tags]
 
 
 def calculate_stats(tasks):
