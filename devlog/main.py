@@ -23,39 +23,38 @@ def choose_sort(tasks):
     display_name, key_fn, reverse = SORT_MENU[choice - 1]
     return sorted(tasks, key=key_fn, reverse=reverse)
 
-
-def complete_task(tasks):
+def complete_task_handler(tasks):
     if not tasks:
         print("\nNo tasks to mark complete.")
-        return
+        return True
     task = find_task_by_id(tasks)
     if task is None:
-        return
+        return True
     if task['status'] == "done":
         print("Task was completed before.")
     else:
         task['status'] = "done"
         print(f"\nTask '{task['title']}' is now marked as done.")
+    return True
 
-
-def delete_task(tasks):
+def delete_task_handler(tasks):
     if not tasks:
         print("\nNo tasks to delete.")
-        return
+        return True
     
     task = find_task_by_id(tasks)
 
     if task is None:
-        return
+        return True
 
     tasks.remove(task)
     print(f"\nREMOVED: {task['title']}")
+    return True
 
-
-def show_stats(tasks):
+def show_stats_handler(tasks):
     if not tasks:
-        print("(no tasks yet)")
-        return
+        print("\n(no tasks yet)")
+        return True
 
     counts_status, total, rate = calculate_stats(tasks)
 
@@ -74,63 +73,66 @@ def show_stats(tasks):
     if pending:
         tasks_list = ", ".join(pending)
         print(f"Pending: {tasks_list}")
+    return True
 
+def add_task_handler(tasks):
+    raw = get_task_input()
+    if raw is not None:
+        task = make_task(raw['title'], *raw['tags'], priority=raw['priority'], status='todo')
+        task['id'] = next_task_id(tasks)
+        tasks.append(task)
+        print(f"\nTask '{task['title']}' added.")
+    return True
+
+def list_tasks_handler(tasks):
+    list_tasks(tasks)
+    return True
+
+def quit_handler(tasks):
+    if confirm_action():
+        print("\nGoodbye!")
+        return False
+    return True
+
+def sort_tasks_handler(tasks):
+    sorted_tasks = choose_sort(tasks)
+    list_tasks(sorted_tasks)
+    return True
+
+def filter_by_status_handler(tasks):
+    similar_status = filter_by_status(tasks)
+    list_tasks(similar_status)
+    return True
+
+def filter_by_tags_handler(tasks):
+    tags = parse_tags()
+    matches = tasks_matching_tags(tasks, tags)
+    list_tasks(matches)
+    return True
+
+def toggle_debug_handler(tasks):
+    toggle_debug()
+    return True
+
+ACTIONS = {
+    1: add_task_handler,
+    2: list_tasks_handler,
+    3: sort_tasks_handler,
+    4: complete_task_handler,
+    5: delete_task_handler,
+    6: filter_by_status_handler,
+    7: filter_by_tags_handler,
+    8: show_stats_handler,
+    9: toggle_debug_handler,
+    10: quit_handler
+}
 
 def handle_choice(choice, tasks):
-    if choice == 1:
-        raw = get_task_input()
-        if raw is not None:
-            title = raw['title']
-            priority = raw['priority']
-            tags = raw['tags']
-        
-            task = make_task(title, *tags, priority=priority, status="todo")
-            task['id'] = next_task_id(tasks)
-            tasks.append(task)
-            print(f"\nTask '{task['title']}' added.")
+    handler = ACTIONS.get(choice)
+    if handler is None:
+        print("Invalid choice, try again.")
         return True
-    
-    elif choice == 2:
-        list_tasks(tasks)
-        return True
-    
-    elif choice == 3:
-        sorted_tasks = choose_sort(tasks)
-        list_tasks(sorted_tasks)
-        return True
-
-    elif choice == 4:
-        complete_task(tasks)
-        return True
-    
-    elif choice == 5:
-        delete_task(tasks)
-        return True
-    
-    elif choice == 6:
-        similar_status = filter_by_status(tasks)
-        list_tasks(similar_status)
-        return True
-    
-    elif choice == 7:
-        tags = parse_tags()
-        matches = tasks_matching_tags(tasks, tags)
-        list_tasks(matches)
-        return True
-    
-    elif choice == 8:
-        show_stats(tasks)
-        return True
-    
-    elif choice == 9:
-        toggle_debug()
-        return True
-
-    elif choice == 10:
-        if confirm_action():
-            print("\nGoodbye!")
-            return False
-        return True
+    return handler(tasks)
 
 
 def run():
