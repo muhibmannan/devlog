@@ -32,7 +32,7 @@ through disconnected tutorials, I'm building one cohesive application across
 10 phases — each phase introducing a layer of Python, from fundamentals to
 expert-level internals.
 
-The goal is depth: understanding not just *how* Python works, but *why* it
+The goal is depth: understanding not just _how_ Python works, but _why_ it
 was designed that way. The commit history is the record of that journey —
 one consistent, documented step at a time.
 
@@ -42,29 +42,34 @@ one consistent, documented step at a time.
 
 Under active development — building in public across 10 phases.
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| 1 | Foundations | ✅ Complete |
-| 2 | Data Structures | ✅ Complete |
-| 3 | Functions & Modules | 🔨 In progress |
-| 4 | Object-Oriented Python | ⬜ Planned |
-| 5 | File I/O & Error Handling | ⬜ Planned |
-| 6 | Standard Library | ⬜ Planned |
-| 7 | Advanced Python | ⬜ Planned |
-| 8 | The Outside World (APIs, DB) | ⬜ Planned |
-| 9 | Concurrency & Async | ⬜ Planned |
-| 10 | Expert Level & Packaging | ⬜ Planned |
+| Phase | Focus                        | Status         |
+| ----- | ---------------------------- | -------------- |
+| 1     | Foundations                  | ✅ Complete    |
+| 2     | Data Structures              | ✅ Complete    |
+| 3     | Functions & Modules          | ✅ Complete    |
+| 4     | Object-Oriented Python       | 🔨 In progress |
+| 5     | File I/O & Error Handling    | ⬜ Planned     |
+| 6     | Standard Library             | ⬜ Planned     |
+| 7     | Advanced Python              | ⬜ Planned     |
+| 8     | The Outside World (APIs, DB) | ⬜ Planned     |
+| 9     | Concurrency & Async          | ⬜ Planned     |
+| 10    | Expert Level & Packaging     | ⬜ Planned     |
 
 ---
 
 ## Features
 
 Current:
+
 - Interactive terminal menu with input validation
 - Add, list, and filter tasks held in memory
 - Tasks carry id, title, status, priority, and tags
+- Multi-criteria task sorting via a dispatch table
+- Runs as an installable-style package: `python -m devlog`
 
 Planned (by v1.0.0):
+
+- Object-oriented core with a `Task` class and `Note` subclass
 - Persistent storage (JSON, then SQLite)
 - Live job-listing search via public APIs
 - Productivity stats and CSV report export
@@ -79,7 +84,7 @@ Requires Python 3.11+
 
 ```bash
 # Clone the repo
-git clone https://github.com/muhib/devlog.git
+git clone https://github.com/muhibmannan/devlog.git
 cd devlog
 
 # (Recommended) create and activate a virtual environment
@@ -87,7 +92,7 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 # Run DevLog
-python main.py
+python -m devlog
 ```
 
 Once packaging lands in Phase 10, this becomes:
@@ -102,7 +107,7 @@ devlog --help
 ## Usage
 
 ```bash
-python main.py
+python -m devlog
 ```
 
 Then follow the on-screen menu to add, list, and filter tasks.
@@ -114,16 +119,23 @@ A full command reference will be added as the CLI matures.
 
 ```
 devlog/
-├── main.py            # entry point and menu loop
-├── docs/              # learning notes and images
+├── devlog/             # installable Python package
+│   ├── __init__.py     # version
+│   ├── __main__.py     # entry point (enables python -m devlog)
+│   ├── main.py         # orchestration
+│   ├── tasks.py        # task data and core logic
+│   ├── display.py      # output/formatting functions
+│   ├── input.py        # user input functions
+│   └── utils.py        # shared constants and debug state
+├── docs/               # learning notes and images
 │   └── images/
 ├── README.md
 └── CHANGELOG.md
 ```
 
-This structure evolves across phases — splitting into a proper package
-in Phase 3, gaining a test suite in Phase 7, and a `pyproject.toml`
-in Phase 10.
+This structure evolves across phases — package structure landed in
+Phase 3, an OOP core arrives in Phase 4, a test suite in Phase 7, and
+a `pyproject.toml` in Phase 10.
 
 ---
 

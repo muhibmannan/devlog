@@ -11,17 +11,41 @@ Each release corresponds to the completion of a curriculum phase.
 
 ## [Unreleased]
 
-### In progress — Phase 3: Functions & Modules
-- Variadic functions with `*args` and `**kwargs`
-- A `make_task()` factory to centralise task construction
-- Splitting DevLog into multiple modules
-- Restructuring into an installable package layout (`python -m devlog`)
+### In progress — Phase 4: Object-Oriented Python
+
+- `Task` class with instance attributes
+- Instance methods and class/static methods
+- Properties, inheritance, and magic methods
+- `Note` subclass and dataclass equivalents
+
+---
+
+## [0.3.0] — Phase 3: Functions & Modules
+
+### Added
+
+- Variadic `make_task()` factory supporting flexible tags via `*args`/`**kwargs`
+- Multi-criteria task sorting via a dispatch table
+- Package entry point enabling `python -m devlog`
+
+### Changed
+
+- Restructured project into an installable `devlog` package with `__init__.py` and `__main__.py`
+- Split the monolithic script into modules by responsibility: `tasks.py` (data and core logic), `display.py` (output), `input.py` (user input), `utils.py` (shared constants and debug state)
+- Extracted pure task logic out of the entry point into `tasks.py`
+- Replaced named sort key functions with lambdas
+- Refactored `handle_choice` from an if/elif chain into a dict dispatch table, with consistent `handler(tasks) -> bool` signatures across all handlers
+
+### Known debt
+
+- `find_task_by_id` and `filter_by_status` in `tasks.py` still call `input()`/`print()` directly — mixed functions not yet fully separated from display concerns. Tracked for cleanup in a later phase.
 
 ---
 
 ## [0.2.0] — Phase 2: Data Structures
 
 ### Added
+
 - Tasks stored as structured dictionaries in a list
 - Each task carries `id`, `title`, `status`, `priority`, and `tags`
 - List all tasks with formatted output
@@ -31,6 +55,7 @@ Each release corresponds to the completion of a curriculum phase.
 - Delete a task
 
 ### Changed
+
 - Task data moved from single variables into in-memory collections
 
 <!--
@@ -43,6 +68,7 @@ Each release corresponds to the completion of a curriculum phase.
 ## [0.1.0] — Phase 1: Foundations
 
 ### Added
+
 - Interactive terminal menu with a welcome banner and version
 - Numbered menu options: Add Task, List Tasks, Quit
 - User input handling for menu selection
@@ -69,6 +95,7 @@ Each release corresponds to the completion of a curriculum phase.
   - removed features
 -->
 
-[Unreleased]: https://github.com/muhib/devlog/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/muhib/devlog/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/muhib/devlog/releases/tag/v0.1.0
+[Unreleased]: https://github.com/muhibmannan/devlog/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/muhibmannan/devlog/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/muhibmannan/devlog/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/muhibmannan/devlog/releases/tag/v0.1.0
