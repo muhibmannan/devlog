@@ -68,3 +68,12 @@ def calculate_stats(tasks):
     rate = (done_count /len(tasks) * 100) if tasks else 0
 
     return status_counts, total, rate
+
+
+class Task:
+    def __init__(self, title, priority=2, status="todo", tags=None):
+        self.title = title
+        self.priority = priority
+        self.status = status
+        self.tags = set(tags) if tags else set()
+        self.id = None
