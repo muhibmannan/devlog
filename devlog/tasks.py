@@ -1,3 +1,4 @@
+from . import utils
 
 STATUSES = ("todo", "in-progress", "done")
 
@@ -77,3 +78,22 @@ class Task:
         self.status = status
         self.tags = set(tags) if tags else set()
         self.id = None
+
+    def mark_done(self):
+        self.status = "done"
+
+    def is_done(self):
+        return self.status == "done"
+
+    def add_tag(self, tag):
+        cleaned = tag.strip().lower()
+        if cleaned:
+            self.tags.add(cleaned)
+
+    def matches_tags(self, tags):
+        return bool(self.tags & tags)
+
+    def summary(self):
+        id_display = self.id if self.id is not None else "?"
+        tags_display = ", ".join(sorted(self.tags)) if self.tags else "(no tags)"
+        return f"[#{id_display}] - {self.title} - {utils.PRIORITY_LABELS[self.priority - 1]} - {self.status} - {tags_display}"
