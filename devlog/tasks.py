@@ -72,11 +72,14 @@ def calculate_stats(tasks):
 
 
 class Task:
+
+    VALID_STATUSES = {"todo", "in-progress", "done"}
+
     def __init__(self, title, priority=2, status="todo", tags=None):
         self.title = title
         self.priority = priority
         self.status = status
-        self.tags = set(tags) if tags else set()
+        self.tags = {Task.normalise_tag(tag) for tag in tags} if tags else set()
         self.id = None
 
     def mark_done(self):
@@ -86,9 +89,9 @@ class Task:
         return self.status == "done"
 
     def add_tag(self, tag):
-        cleaned = tag.strip().lower()
-        if cleaned:
-            self.tags.add(cleaned)
+        clean = Task.normalise_tag(tag)
+        if clean:
+            self.tags.add(clean)
 
     def matches_tags(self, tags):
         return bool(self.tags & tags)
@@ -97,3 +100,19 @@ class Task:
         id_display = self.id if self.id is not None else "?"
         tags_display = ", ".join(sorted(self.tags)) if self.tags else "(no tags)"
         return f"[#{id_display}] - {self.title} - {utils.PRIORITY_LABELS[self.priority - 1]} - {self.status} - {tags_display}"
+
+    @staticmethod
+    def normalise_tag(tag):
+        return tag.strip().lower()
+
+    @classmethod
+    def from_dict(cls, data):
+        title = data.get("title", "")
+        priority = data.get("priority", 2)
+
+        status = data.get("status", "todo")
+        if status not in cls.VALID_STATUSES:
+            status = "todo"
+
+        tags = data.get("tags")
+        return cls(title, priority=priority, status=status, tags=tags)
