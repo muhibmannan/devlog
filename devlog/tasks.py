@@ -82,6 +82,43 @@ class Task:
         self.tags = {Task.normalise_tag(tag) for tag in tags} if tags else set()
         self.id = None
 
+    @property
+    def priority(self):
+        return self._priority
+
+    @priority.setter
+    def priority(self, value):
+        if value not in range(1, len(utils.PRIORITY_LABELS) + 1):
+            raise ValueError(f"Invalid priority {value}. Must be between 1 and {len(utils.PRIORITY_LABELS)}")
+        self._priority = value
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        if value not in self.VALID_STATUSES:
+            allowed = ", ".join(sorted(self.VALID_STATUSES))
+            raise ValueError(f"Invalid status {value}. Must be one of: {allowed}")
+        self._status = value
+
+    @property
+    def priority_label(self):
+        return utils.PRIORITY_LABELS[self.priority - 1]
+
+    @staticmethod
+    def normalise_tag(tag):
+        return tag.strip().lower()
+
+    @classmethod
+    def from_dict(cls, data):
+        title = data.get("title", "")
+        priority = data.get("priority", 2)
+        status = data.get("status", "todo")
+        tags = data.get("tags")
+        return cls(title, priority=priority, status=status, tags=tags)
+
     def mark_done(self):
         self.status = "done"
 
@@ -99,20 +136,5 @@ class Task:
     def summary(self):
         id_display = self.id if self.id is not None else "?"
         tags_display = ", ".join(sorted(self.tags)) if self.tags else "(no tags)"
-        return f"[#{id_display}] - {self.title} - {utils.PRIORITY_LABELS[self.priority - 1]} - {self.status} - {tags_display}"
+        return f"[#{id_display}] - {self.title} - {self.priority_label} - {self.status} - {tags_display}"
 
-    @staticmethod
-    def normalise_tag(tag):
-        return tag.strip().lower()
-
-    @classmethod
-    def from_dict(cls, data):
-        title = data.get("title", "")
-        priority = data.get("priority", 2)
-
-        status = data.get("status", "todo")
-        if status not in cls.VALID_STATUSES:
-            status = "todo"
-
-        tags = data.get("tags")
-        return cls(title, priority=priority, status=status, tags=tags)
