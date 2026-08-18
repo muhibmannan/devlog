@@ -79,7 +79,7 @@ class Task:
         self.title = title
         self.priority = priority
         self.status = status
-        self.tags = {Task.normalise_tag(tag) for tag in tags} if tags else set()
+        self.tags = {self.normalise_tag(tag) for tag in tags} if tags else set()
         self.id = None
 
     @property
@@ -126,7 +126,7 @@ class Task:
         return self.status == "done"
 
     def add_tag(self, tag):
-        clean = Task.normalise_tag(tag)
+        clean = self.normalise_tag(tag)
         if clean:
             self.tags.add(clean)
 
@@ -138,3 +138,34 @@ class Task:
         tags_display = ", ".join(sorted(self.tags)) if self.tags else "(no tags)"
         return f"[#{id_display}] - {self.title} - {self.priority_label} - {self.status} - {tags_display}"
 
+
+class Note(Task):
+    """A learning note. A Note is a Task with written content attached."""
+
+    VALID_CATEGORIES = {"python", "git", "career", "general"}
+
+    def __init__(self, title, content, priority=2, status="todo", tags=None, category="general"):
+        # NOTE: duplicates Task.__init__ — replaced with super() on Day 33
+        self.title = title
+        self.content = content
+        self.priority = priority
+        self.status = status
+        self.tags = {self.normalise_tag(tag) for tag in tags} if tags else set()
+        self.category = category
+        self.id = None
+
+    @property
+    def category(self):
+        return self._category
+
+    @category.setter
+    def category(self, value):
+        if value not in self.VALID_CATEGORIES:
+            raise ValueError(f"Invalid category: {", ".join(sorted(self.VALID_CATEGORIES))}")
+        self._category = value
+
+    def preview(self, limit=40):
+        """Return the first limit characters of content, adding '...' if truncated."""
+        if len(self.content) > limit:
+            return self.content[:limit] + "..."
+        return self.content
