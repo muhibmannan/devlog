@@ -161,7 +161,7 @@ class Note(Task):
     @category.setter
     def category(self, value):
         if value not in self.VALID_CATEGORIES:
-            raise ValueError(f"Invalid category: {", ".join(sorted(self.VALID_CATEGORIES))}")
+            raise ValueError(f"Invalid category: {value}. Please choose from {", ".join(sorted(self.VALID_CATEGORIES))}")
         self._category = value
 
     def preview(self, limit=40):
